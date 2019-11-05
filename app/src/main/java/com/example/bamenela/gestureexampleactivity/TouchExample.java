@@ -3,6 +3,7 @@ package com.example.bamenela.gestureexampleactivity;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -44,32 +45,35 @@ public class TouchExample extends View {
 
     public TouchExample(Context context,Activity activity) {
         super(context);
-        getImagesPath(activity);
-        parseImage();
         for (int i = 0; i<MAX_POINTERS; i++) {
             mPointers[i] = new Pointer();
         }
 
         mFontSize = 16 * getResources().getDisplayMetrics().density;
         mPaint = new Paint();
-        mPaint.setColor(Color.WHITE);
+        mPaint.setColor(Color.BLACK);
         mPaint.setTextSize(mFontSize);
 
         mGestureDetector = new GestureDetector(context, new ZoomGesture());
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
+        getImagesPath(activity);
+        parseImage();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
+
         super.onDraw(canvas);
-        BitmapDrawable drawable=new BitmapDrawable(context.getResources(),listOfAllBitmaps.get(1));
-        drawable.draw(canvas);
+        //canvas.setBitmap(listOfAllBitmaps.get(1));
         for (Pointer p : mPointers) {
             if (p.index != -1) {
                 String text = "Index: " + p.index + " ID: " + p.id;
                 canvas.drawText(text, p.x, p.y, mPaint);
             }
         }
+        BitmapDrawable drawable=new BitmapDrawable(listOfAllBitmaps.get(1));
+        drawable.setBounds(0,0,200,200);
+        drawable.draw(canvas);
     }
 
     @Override
@@ -158,18 +162,13 @@ public class TouchExample extends View {
         while(list.hasNext()){
             File imgFile = new File(list.next().toString());
             if(imgFile.exists()){
-                Bitmap myBitmap=BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inSampleSize = 4;
+                Bitmap myBitmap=BitmapFactory.decodeFile(imgFile.getAbsolutePath(),options);
                 myBitmaps.add(myBitmap);
             }
         }
         listOfAllBitmaps=myBitmaps;
-    }
-
-    public void drawImages(){
-        Canvas c=new Canvas(listOfAllBitmaps.get(1));
-        BitmapDrawable drawable = new BitmapDrawable(context.getResources(),listOfAllBitmaps.get(1));
-        drawable.setBounds(0, 0, 100, 100);
-        drawable.draw(c);
     }
 
     public void changePhotosScale()
