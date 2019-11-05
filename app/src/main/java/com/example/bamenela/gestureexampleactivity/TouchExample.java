@@ -35,8 +35,9 @@ public class TouchExample extends View {
         int id = -1;
     }
 
-    public TouchExample(Context context) {
+    public TouchExample(Context context,Activity activity) {
         super(context);
+        getImagesPath(activity);
         for (int i = 0; i<MAX_POINTERS; i++) {
             mPointers[i] = new Pointer();
         }
@@ -136,6 +137,7 @@ public class TouchExample extends View {
         }
 
         listOfAllImages = listImages ;
+        System.out.println(listImages);
     }
 
 

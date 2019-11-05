@@ -16,7 +16,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ArrayList<String> images=getImagesPath(this);
+        TouchExample view = new TouchExample(this,this);
+        setContentView(view);
     }
     
 }
