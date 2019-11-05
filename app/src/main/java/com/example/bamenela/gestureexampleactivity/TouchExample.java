@@ -33,7 +33,7 @@ public class TouchExample extends View {
     private float mFontSize;
     private Context context;
     private static ArrayList<String> listOfAllImages;
-    private static ArrayList<BitmapDrawable> listOfAllBitmaps;
+    private static ArrayList<Bitmap> listOfAllBitmaps;
 
     class Pointer {
         float x = 0;
@@ -45,6 +45,7 @@ public class TouchExample extends View {
     public TouchExample(Context context,Activity activity) {
         super(context);
         getImagesPath(activity);
+        parseImage();
         for (int i = 0; i<MAX_POINTERS; i++) {
             mPointers[i] = new Pointer();
         }
@@ -61,6 +62,8 @@ public class TouchExample extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        BitmapDrawable drawable=new BitmapDrawable(context.getResources(),listOfAllBitmaps.get(1));
+        drawable.draw(canvas);
         for (Pointer p : mPointers) {
             if (p.index != -1) {
                 String text = "Index: " + p.index + " ID: " + p.id;
@@ -151,15 +154,22 @@ public class TouchExample extends View {
     public void parseImage()
     {
         Iterator list = listOfAllImages.iterator();
-        ArrayList<BitmapDrawable> myBitmaps=new ArrayList<BitmapDrawable>();
+        ArrayList<Bitmap> myBitmaps=new ArrayList<Bitmap>();
         while(list.hasNext()){
             File imgFile = new File(list.next().toString());
             if(imgFile.exists()){
-                BitmapDrawable myBitmap=new BitmapDrawable(context.getResources(),imgFile.getAbsolutePath());
+                Bitmap myBitmap=BitmapFactory.decodeFile(imgFile.getAbsolutePath());
                 myBitmaps.add(myBitmap);
             }
         }
         listOfAllBitmaps=myBitmaps;
+    }
+
+    public void drawImages(){
+        Canvas c=new Canvas(listOfAllBitmaps.get(1));
+        BitmapDrawable drawable = new BitmapDrawable(context.getResources(),listOfAllBitmaps.get(1));
+        drawable.setBounds(0, 0, 100, 100);
+        drawable.draw(c);
     }
 
     public void changePhotosScale()
