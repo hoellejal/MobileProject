@@ -4,9 +4,12 @@ package com.example.bamenela.gestureexampleactivity;
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.view.GestureDetector;
@@ -14,7 +17,9 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 
 public class TouchExample extends View {
@@ -26,7 +31,9 @@ public class TouchExample extends View {
     private Pointer[] mPointers = new Pointer[MAX_POINTERS];
     private Paint mPaint;
     private float mFontSize;
+    private Context context;
     private static ArrayList<String> listOfAllImages;
+    private static ArrayList<BitmapDrawable> listOfAllBitmaps;
 
     class Pointer {
         float x = 0;
@@ -141,9 +148,18 @@ public class TouchExample extends View {
     }
 
 
-    public void parseImage(ArrayList<String> images)
+    public void parseImage()
     {
-
+        Iterator list = listOfAllImages.iterator();
+        ArrayList<BitmapDrawable> myBitmaps=new ArrayList<BitmapDrawable>();
+        while(list.hasNext()){
+            File imgFile = new File(list.next().toString());
+            if(imgFile.exists()){
+                BitmapDrawable myBitmap=new BitmapDrawable(context.getResources(),imgFile.getAbsolutePath());
+                myBitmaps.add(myBitmap);
+            }
+        }
+        listOfAllBitmaps=myBitmaps;
     }
 
     public void changePhotosScale()
