@@ -1,14 +1,20 @@
 package com.example.bamenela.gestureexampleactivity;
 
 
+import android.app.Activity;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+
+import java.util.ArrayList;
 
 
 public class TouchExample extends View {
@@ -20,6 +26,7 @@ public class TouchExample extends View {
     private Pointer[] mPointers = new Pointer[MAX_POINTERS];
     private Paint mPaint;
     private float mFontSize;
+    private static ArrayList<String> listOfAllImages;
 
     class Pointer {
         float x = 0;
@@ -112,4 +119,35 @@ public class TouchExample extends View {
             return true;
         }
     }
+
+    public static void getImagesPath(Activity activity) {
+        Uri uri = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        ArrayList<String> listImages = new ArrayList<String>();
+        String[] projection = { MediaStore.MediaColumns.DATA};
+        Cursor cursor = activity.getContentResolver().query(uri, projection, null,
+                null, null);
+
+        String ImagePath = null;
+
+        int column_index_data = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
+        while (cursor.moveToNext()) {
+            ImagePath = cursor.getString(column_index_data);
+            listImages.add(ImagePath);
+        }
+
+        listOfAllImages = listImages ;
+    }
+
+
+    public void parseImage(ArrayList<String> images)
+    {
+
+    }
+
+    public void changePhotosScale()
+    {
+
+    }
+
+
 }

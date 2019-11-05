@@ -18,31 +18,5 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ArrayList<String> images=getImagesPath(this);
     }
-/*
-    public void onActivityResult(int requestCode,int resultCode,Intent data){
-        if (resultCode == Activity.RESULT_OK){
-            if(requestCode == GALLERY_REQUEST_CODE){
-                imageView.setImageURI(data.getData());
-            }
-        }
-    } */
-
-
-    public static ArrayList<String> getImagesPath(Activity activity) {
-        Uri uri = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        ArrayList<String> listOfAllImages = new ArrayList<String>();
-        String[] projection = { MediaStore.MediaColumns.DATA};
-        Cursor cursor = activity.getContentResolver().query(uri, projection, null,
-                null, null);
-
-        String ImagePath = null;
-
-        int column_index_data = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
-        while (cursor.moveToNext()) {
-            ImagePath = cursor.getString(column_index_data);
-            listOfAllImages.add(ImagePath);
-        }
-
-        return listOfAllImages;
-    }
+    
 }
