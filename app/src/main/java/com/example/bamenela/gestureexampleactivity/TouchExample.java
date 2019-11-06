@@ -64,16 +64,30 @@ public class TouchExample extends View {
     protected void onDraw(Canvas canvas) {
 
         super.onDraw(canvas);
-        //canvas.setBitmap(listOfAllBitmaps.get(1));
         for (Pointer p : mPointers) {
             if (p.index != -1) {
                 String text = "Index: " + p.index + " ID: " + p.id;
                 canvas.drawText(text, p.x, p.y, mPaint);
             }
         }
-        BitmapDrawable drawable=new BitmapDrawable(listOfAllBitmaps.get(1));
-        drawable.setBounds(0,0,200,200);
-        drawable.draw(canvas);
+
+        int posX=0,posY=0;
+        BitmapDrawable drawable;
+        Iterator it = listOfAllBitmaps.iterator();
+        while (it.hasNext()){
+            drawable=new BitmapDrawable((Bitmap) it.next());
+            System.out.println(drawable.getBitmap());
+            drawable.setBounds(posX,posY,posX+200,200+posY);
+            drawable.draw(canvas);
+            posX+=200;
+            if(posX>=400){
+                posX=0;
+                posY+=200;
+            }
+        }
+//1: draw(0,0,200,200)
+        //2: draw(200,0,400,200)
+        //3: draw(0,200,200,400)
     }
 
     @Override
@@ -151,7 +165,6 @@ public class TouchExample extends View {
         }
 
         listOfAllImages = listImages ;
-        System.out.println(listImages);
     }
 
 
@@ -169,6 +182,8 @@ public class TouchExample extends View {
             }
         }
         listOfAllBitmaps=myBitmaps;
+
+        System.out.println(myBitmaps);
     }
 
     public void changePhotosScale()
