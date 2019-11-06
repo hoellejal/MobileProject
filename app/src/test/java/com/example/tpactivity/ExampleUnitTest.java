@@ -1,4 +1,4 @@
-package com.example.bamenela.gestureexampleactivity;
+package com.example.tpactivity;
 
 import org.junit.Test;
 

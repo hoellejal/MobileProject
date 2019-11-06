@@ -1,4 +1,4 @@
-package com.example.bamenela.gestureexampleactivity;
+package com.example.tpactivity;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.example.bamenela.gestureexampleactivity", appContext.getPackageName());
+        assertEquals("com.example.tpactivity", appContext.getPackageName());
     }
 }
