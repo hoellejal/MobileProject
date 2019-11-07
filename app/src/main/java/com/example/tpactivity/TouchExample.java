@@ -38,6 +38,7 @@ public class TouchExample extends View {
     private Activity activity; // activity which uses this view
     private int offsetscroll=0; // value gotten from scroll events
     private int scale=7; // scale of the pictures: if 7 it's the smallest, if 1 it's the biggest
+    private int maxHeight=0; // height of all the pictures
     private static ArrayList<String> listOfAllImages; // list of images paths
     private static ArrayList<Bitmap> listOfAllBitmaps; // list of images bitmaps
 
@@ -90,12 +91,15 @@ public class TouchExample extends View {
             @Override
             public boolean onScroll(final MotionEvent e1, final MotionEvent e2, final float distanceX, final float distanceY) {
                 /* adds to offsetscroll the value of the Y-scroll */
-                if(offsetscroll+distanceY>=0) {
+                if(offsetscroll+distanceY>=0 && offsetscroll+distanceY<=maxHeight) {
                     offsetscroll += distanceY;
                 }
                 /* if the operation would make us scroll higher than the pictures, sets offsetscroll to 0 */
-                else{
+                else if (offsetscroll+distanceY<0){
                     offsetscroll=0;
+                }
+                else{
+                    offsetscroll=maxHeight;
                 }
 
                 return true;
@@ -123,24 +127,37 @@ public class TouchExample extends View {
 
         /* the width of the pictures */
         int width=canvas.getWidth()/scale;
+        System.out.println(canvas.getWidth());
+        System.out.println(width);
+        int maxheightrow=0;
+        int scaledown=0;
+        int height=0;
 
         /* for each bitmap, creates a bitmapDrawable, gives its position and draws it */
         Iterator it = listOfAllBitmaps.iterator();
 
         while (it.hasNext()){
-            drawable=new BitmapDrawable((Bitmap) it.next());
-
+            Bitmap b = (Bitmap) it.next();
+            drawable=new BitmapDrawable(b);
+            scaledown=b.getWidth()/width;
+            height=b.getHeight()/scaledown;
+            if(height>maxheightrow) {
+                maxheightrow = height;
+            }
             /* offsetscroll allows us to scroll past the first row of pictures, and then back. offsetscroll is always positive */
             /* the pictures we scroll past are still displayed, but we cannot see them as they are out of the canvas's bounds */
-            drawable.setBounds(posX,posY-offsetscroll,posX+width,width+posY-offsetscroll);
+            drawable.setBounds(posX,posY-offsetscroll,posX+width,height+posY-offsetscroll);
 
             /* increments the x position by the width of the pictures */
             posX+=width;
+            if(maxheightrow>0)
+                maxHeight=maxheightrow;
 
             /* when we are at the end of a row (of the canvas's width), return to the beginning and increments the y position by the height of the pictures */
-            if(posX>=canvas.getWidth()){
+            if(posX+width>=canvas.getWidth()){
                 posX=0;
-                posY+=width;
+                posY+=maxheightrow;
+                maxheightrow=0;
             }
             drawable.draw(canvas);
         }
