@@ -129,7 +129,6 @@ public class TouchExample extends View {
 
         while (it.hasNext()){
             drawable=new BitmapDrawable((Bitmap) it.next());
-
             /* offsetscroll allows us to scroll past the first row of pictures, and then back. offsetscroll is always positive */
             /* the pictures we scroll past are still displayed, but we cannot see them as they are out of the canvas's bounds */
             drawable.setBounds(posX,posY-offsetscroll,posX+width,width+posY-offsetscroll);
@@ -138,12 +137,13 @@ public class TouchExample extends View {
             posX+=width;
 
             /* when we are at the end of a row (of the canvas's width), return to the beginning and increments the y position by the height of the pictures */
-            if(posX>=canvas.getWidth()){
+            if(posX+width>=canvas.getWidth()){
                 posX=0;
                 posY+=width;
             }
             drawable.draw(canvas);
         }
+
         /* old code, to remove in the end */
         for (Pointer p : mPointers) {
             if (p.index != -1) {
@@ -252,13 +252,16 @@ public class TouchExample extends View {
     }
 
     /**
-     * Reads the list of images' paths and makes a bitmap for each one, then stores it in a global list of bitmaps
+     * Reads the list of images' paths and makes a bitmap for each one, then crops it in a square and stores it in a global list of bitmaps
      */
     public void parseImage()
     {
         /* local list of bitmaps */
         ArrayList<Bitmap> myBitmaps=new ArrayList<Bitmap>();
+
         Iterator list = listOfAllImages.iterator();
+        Bitmap myBitmap;
+        Bitmap croppedBitmap;
         /* for each image path, creates a new file from the path and makes a bitmap out of it */
         while(list.hasNext()){
             File imgFile = new File(list.next().toString());
@@ -268,10 +271,16 @@ public class TouchExample extends View {
                 options.inSampleSize = 4;
 
                 /* makes a bitmap from the file created before */
-                Bitmap myBitmap=BitmapFactory.decodeFile(imgFile.getAbsolutePath(),options);
+                myBitmap=BitmapFactory.decodeFile(imgFile.getAbsolutePath(),options);
+
+                /* gets the size of the smallest side */
+                int taille = myBitmap.getWidth()<myBitmap.getHeight()? myBitmap.getWidth() : myBitmap.getHeight();
+
+                /* creates a new bitmap from the first, cropped in a square */
+                croppedBitmap =Bitmap.createBitmap(myBitmap, 0,0,taille,taille);
 
                 /* adds the bitmap to the list of bitmaps */
-                myBitmaps.add(myBitmap);
+                myBitmaps.add(croppedBitmap);
             }
         }
 

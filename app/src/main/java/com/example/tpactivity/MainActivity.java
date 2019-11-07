@@ -10,7 +10,7 @@ public class MainActivity extends AppCompatActivity {
         /* Creates a new view with the context of the application and the activity */
         TouchExample view = null;
         try {
-            view = new TouchExample(this,this);
+            view = new TouchExample(this.getBaseContext(),this);
         } catch (RuntimeException e) {
             e.printStackTrace();
         }
