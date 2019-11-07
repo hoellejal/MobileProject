@@ -59,42 +59,16 @@ public class TouchExample extends View {
         }
 
         /* fills the list of images paths */
-        getImagesPath(activity, 20);
+        getImagesPath(activity, 21);
 
         /* fills the list of bitmaps, created from the list of images paths */
         parseImage();
 
-        /* old code, to remove in the end */
+        /* defines our variable as a scaleGestureDectector */
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
 
         /* defines our variable as a gestureDectector with a listener */
-        scrollGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
-
-            /* defines the behavior for a scroll event */
-            @Override
-            public boolean onScroll(final MotionEvent e1, final MotionEvent e2, final float distanceX, final float distanceY) {
-                int maxScrollableHeight = Math.max(0, -screenHeight + (int) (((double)screenWidth /scale) * (int) (Math.ceil((double)listOfAllBitmaps.size() /scale))));
-                if(offsetscroll+distanceY>0 && offsetscroll+distanceY < maxScrollableHeight) {
-                    offsetscroll += distanceY;
-                }
-                /* if the operation would make us scroll higher or lower than the pictures, sets offsetscroll to 0 */
-                else if (offsetscroll+distanceY<=0){
-                    offsetscroll=0;
-                }
-                /* if the operation would make us scroll lower than the pictures, sets offsetscroll to the maxscrollableheight (the bottom line for the last pictures */
-                else{
-                    offsetscroll=maxScrollableHeight;
-                    getImagesPath(activity, 5);
-                    parseImage();
-                }
-
-                return true;
-            }
-            @Override
-            public boolean onDown(MotionEvent e) {
-                return true;
-            }
-        });
+        scrollGestureDetector = new GestureDetector(context, new ScrollGesture());
     }
 
     /**
@@ -165,6 +139,38 @@ public class TouchExample extends View {
                 break;
         }
         return true;
+    }
+
+    /**
+     * GestureListener to detect onScroll events and process them
+     */
+    public class ScrollGesture extends GestureDetector.SimpleOnGestureListener {
+        /* defines the behavior for a scroll event */
+        @Override
+        public boolean onScroll(final MotionEvent e1, final MotionEvent e2, final float distanceX, final float distanceY) {
+            int maxScrollableHeight = Math.max(0, -screenHeight + (int) (((double) screenWidth / scale) * (int) (Math.ceil((double) listOfAllBitmaps.size() / scale))));
+            /* if the scroll is made within the gallery bounds, keeps the scrolled distance in the offsetscroll variable */
+            if (offsetscroll + distanceY > 0 && offsetscroll + distanceY < maxScrollableHeight) {
+                offsetscroll += distanceY;
+            }
+            /* if the operation would make us scroll higher than the pictures, sets offsetscroll to 0 */
+            else if (offsetscroll + distanceY <= 0) {
+                offsetscroll = 0;
+            }
+            /* if the operation would make us scroll lower than the pictures, sets offsetscroll to the maxscrollableheight (the bottom line for the last pictures */
+            else {
+                offsetscroll = maxScrollableHeight;
+                getImagesPath(activity, 7);
+                parseImage();
+            }
+
+            return true;
+        }
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
     }
 
     /**
