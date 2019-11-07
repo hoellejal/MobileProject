@@ -8,8 +8,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
@@ -26,30 +24,21 @@ import static android.support.v4.content.PermissionChecker.checkSelfPermission;
 
 
 public class TouchExample extends View {
-    private static final int MAX_POINTERS = 2;
     private float mScale = 4f;
-    private GestureDetector mGestureDetector;
-    private ScaleGestureDetector mScaleGestureDetector;
+    private ScaleGestureDetector mScaleGestureDetector; //scaleGestureDetector to detect zoom through pinch scale event
     private GestureDetector scrollGestureDetector; // gestureDetector to detect scroll events
-    private Pointer[] mPointers = new Pointer[MAX_POINTERS];
     private Context context; // context of the application
     private Activity activity; // activity which uses this view
     private int offsetscroll=0; // value gotten from scroll events
     private int scale=4; // scale of the pictures (higher scale means smaller picture)
     private static final int MIN_SCALE = 1; //min scale of the pictures (biggest pictures)
     private static final int MAX_SCALE = 7; //max scale of the pictures (smallest pictures)
-    private static ArrayList<String> listOfAllPicturesPaths = new ArrayList<String>(); // list of pictures paths
-    private static ArrayList<Bitmap> listOfAllBitmaps = new ArrayList<Bitmap>(); // list of images bitmaps
+    private static ArrayList<String> listOfAllPicturesPaths = new ArrayList<>(); // list of pictures paths
+    private static ArrayList<Bitmap> listOfAllBitmaps = new ArrayList<>(); // list of images bitmaps
     private int screenHeight;
     private int screenWidth;
     private static boolean cursorOnPicturesPathsInitialised = false;
     private static Cursor cursorOnPicturesPaths;
-    class Pointer {
-        float x = 0;
-        float y = 0;
-        int index = -1;
-        int id = -1;
-    }
 
     /**
      * Constructor for the view
@@ -58,9 +47,11 @@ public class TouchExample extends View {
      */
     public TouchExample(Context context, final Activity activity) throws RuntimeException {
         super(context);
+
         /* saves the context and activity in a private variable */
         this.context=context;
         this.activity=activity;
+
         /* checks the activity's permissions */
         if(!isReadStoragePermissionGranted()){
             /* if we don't have read permission throw runtime exception, the activity won't work */
@@ -68,18 +59,12 @@ public class TouchExample extends View {
         }
 
         /* fills the list of images paths */
-        getImagesPath(activity, 84);
+        getImagesPath(activity, 20);
 
         /* fills the list of bitmaps, created from the list of images paths */
         parseImage();
 
-        //old code, to remove in the end
-        for (int i = 0; i<MAX_POINTERS; i++) {
-            mPointers[i] = new Pointer();
-        }
-
         /* old code, to remove in the end */
-        mGestureDetector = new GestureDetector(context, new ZoomGesture());
         mScaleGestureDetector = new ScaleGestureDetector(context, new ScaleGesture());
 
         /* defines our variable as a gestureDectector with a listener */
@@ -92,10 +77,12 @@ public class TouchExample extends View {
                 if(offsetscroll+distanceY>0 && offsetscroll+distanceY < maxScrollableHeight) {
                     offsetscroll += distanceY;
                 }
-                /* if the operation would make us scroll higher or lower than the pictures, sets offsetscroll to 0 or maxScrollableHeight   (the bottom level for the last picture)*/
+                /* if the operation would make us scroll higher or lower than the pictures, sets offsetscroll to 0 */
                 else if (offsetscroll+distanceY<=0){
                     offsetscroll=0;
-                } else{
+                }
+                /* if the operation would make us scroll lower than the pictures, sets offsetscroll to the maxscrollableheight (the bottom line for the last pictures */
+                else{
                     offsetscroll=maxScrollableHeight;
                     getImagesPath(activity, 5);
                     parseImage();
@@ -112,11 +99,14 @@ public class TouchExample extends View {
 
     /**
      * Draws elements on the canvas to display them
-     * @param canvas
+     * @param canvas the canvas used to draw
      */
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        /* defines the height of the screen */
+        screenHeight = getHeight();
 
         /* position indexes for x and y */
         int posX=0,posY=0;
@@ -124,9 +114,8 @@ public class TouchExample extends View {
         /* the drawable to draw on the canvas */
         BitmapDrawable drawable;
 
-        /* the width of the pictures */
-        screenHeight = canvas.getHeight();
-        screenWidth = canvas.getWidth();
+        /* the width of the pictures: the width of the screen divided by the scale */
+        screenWidth = getWidth();
         int pictureWidth=screenWidth/scale;
 
         /* for each bitmap, creates a bitmapDrawable, give its position and draws it */
@@ -144,7 +133,7 @@ public class TouchExample extends View {
             posX+=pictureWidth;
 
             /* when we are at the end of a row (of the canvas's width), return to the beginning and increments the y position by the height of the pictures */
-            if(posX+pictureWidth>canvas.getWidth()){
+            if(posX+pictureWidth>getWidth()){
                 posX=0;
                 posY+=pictureWidth;
             }
@@ -152,72 +141,41 @@ public class TouchExample extends View {
         }
     }
 
+    /**
+     * processes a touchEvent
+     * @param event the motionEvent
+     * @return true to allow other motionEvents after touchEvents (such as scale events)
+     */
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         super.onTouchEvent(event);
         /* sets an onTouchEvent for our gestureDetector */
         scrollGestureDetector.onTouchEvent(event);
 
-        /* old code, to remove in the end */
-        mGestureDetector.onTouchEvent(event);
+        /* sets an onTouchEvent for our scaleGestureDetector */
         mScaleGestureDetector.onTouchEvent(event);
 
-        int pointerCount = Math.min(event.getPointerCount(), MAX_POINTERS);
         switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_MOVE:
-                for (int id = 0; id<MAX_POINTERS; id++)
-                    mPointers[id].index = -1;
-
-                for (int i = 0; i<pointerCount; i++) {
-                    int id = event.getPointerId(i);
-                    Pointer pointer = mPointers[id];
-                    pointer.index = i;
-                    pointer.id = id;
-                    pointer.x = event.getX(i);
-                    pointer.y = event.getY(i);
-                }
-                invalidate();
-                break;
             case MotionEvent.ACTION_CANCEL:
-                for (int i = 0; i<pointerCount; i++) {
-                    int id = event.getPointerId(i);
-                    mPointers[id].index = -1;
-                }
                 invalidate();
                 break;
         }
         return true;
     }
 
-    /* old code, to remove in the end */
-    public class ZoomGesture extends GestureDetector.SimpleOnGestureListener {
-        private boolean normal = true;
-
-        @Override
-        public boolean onDoubleTap(MotionEvent e) {
-            mScale = normal ? mScale++ : mScale--;
-            mScale = Math.max(MIN_SCALE, Math.min(mScale, MAX_SCALE));//ensure scale is between min and max
-            scale = (int) mScale;
-            normal = !normal;
-            invalidate();
-            return true;
-        }
-    }
-
-    /* old code, to remove in the end */
+    /**
+     * ScaleListener to detect onScale events and use them
+     */
     public class ScaleGesture extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             mScale = mScale/(detector.getScaleFactor()*detector.getScaleFactor());
-            /*if(detector.getScaleFactor()>1){
-                mScale-=0.5;
-            } else if(detector.getScaleFactor()<1){
-                mScale+=0.5;
-            }*/
-            mScale = Math.max(MIN_SCALE, Math.min(mScale, MAX_SCALE));//ensure scale is between min and max
-            scale = (int) mScale;
+            mScale = Math.max(MIN_SCALE, Math.min(mScale, MAX_SCALE)); //ensure scale is between min and max
+            scale = (int) mScale; //rounds scale in an int
             invalidate();
             return true;
         }
@@ -225,8 +183,8 @@ public class TouchExample extends View {
 
     /**
      * Gets the paths for numberToLoad not yet loaded images on the device and stores them in a global list of strings.
-     * @param activity
-     * @param numberToLoad
+     * @param activity the activity using this view
+     * @param numberToLoad the number of images to get from the device
      */
     public static void getImagesPath(Activity activity, int numberToLoad) {
         /* Uri to access external content */
@@ -234,23 +192,29 @@ public class TouchExample extends View {
         String[] projection = { MediaStore.MediaColumns.DATA };
 
         /* path of the current image */
-        String ImagePath = null;
+        String ImagePath;
         if(!cursorOnPicturesPathsInitialised){
             cursorOnPicturesPathsInitialised = true;
             cursorOnPicturesPaths = activity.getContentResolver().query(uri, projection, null,
                     null, null);
         }
 
-        int column_index_data = cursorOnPicturesPaths.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
+        int column_index_data;
+        if (cursorOnPicturesPaths != null) {
+            column_index_data = cursorOnPicturesPaths.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
 
-        int numberOfPicuresAdded = 0;
-        while (cursorOnPicturesPaths.moveToNext() && numberOfPicuresAdded < numberToLoad) {
-            /* the current image's path is stored in cursor */
-            ImagePath = cursorOnPicturesPaths.getString(column_index_data);
+            int numberOfPicuresAdded=0; //number of pictures gotten from the device
 
-            /* add the current image's path to the list of all images' paths */
-            listOfAllPicturesPaths.add(ImagePath);
-            numberOfPicuresAdded++;
+            while (cursorOnPicturesPaths.moveToNext() && numberOfPicuresAdded < numberToLoad) {
+                /* the current image's path is stored in cursor */
+                ImagePath = cursorOnPicturesPaths.getString(column_index_data);
+
+                /* add the current image's path to the list of all images' paths */
+                listOfAllPicturesPaths.add(ImagePath);
+
+                /* increase the count of pictures loaded */
+                numberOfPicuresAdded++;
+            }
         }
     }
 
