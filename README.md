@@ -9,6 +9,6 @@ Au lancement, l'application demande le droit de lecture sur les photos si elle n
 
 Romain De Clercq
 
-Hoel Jalmin
+Hoël Jalmin
 
 Jean Sène
